@@ -1,0 +1,43 @@
+﻿services:
+  dotainfo.api:
+    image: dotainfo.api
+    build:
+      context: .
+      dockerfile: DotaInfo.Api/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+        
+  dotainfo.postgres:
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: "keycloak"
+      POSTGRES_USER: "keycloak"
+      POSTGRES_PASSWORD: "password"
+      ports:
+         "5432:5432"
+  
+  keycloak:
+      image: quay.io/keycloak/keycloak:23.0.6
+      command: start
+      environment:
+        KC_HOSTNAME: localhost
+        KC_HOSTNAME_PORT: 8082
+        KC_HOSTNAME_STRICT_BACKCHANNEL: false
+        KC_HTTP_ENABLED: true
+        KC_HOSTNAME_STRICT_HTTPS: false
+        KC_HEALTH_ENABLED: true
+        KEYCLOAK_ADMIN: "admin"
+        KEYCLOAK_ADMIN_PASSWORD: "password"
+        KC_DB: postgres
+        KC_DB_URL: jdbc:postgresql://dotainfo.postgres/keycloak
+        KC_DB_USERNAME: "keycloak"
+        KC_DB_PASSWORD: "password"
+      ports:
+        - "8082:8080"
+      restart: always
+      depends_on:
+        - dotainfo.postgres
+      
